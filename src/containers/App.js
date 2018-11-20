@@ -132,6 +132,7 @@ class App extends Component {
             isEdited: false
         });
         this.setState({
+            searchValue: '',
             taskList: updatedTaskList
         }, () => localStorage.setItem('state', JSON.stringify(this.state)))
     }
