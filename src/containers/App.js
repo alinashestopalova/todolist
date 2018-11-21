@@ -9,15 +9,17 @@ import TaskAdd from '../components/TaskAdd/TaskAdd'
 class App extends Component {
     state = {
         taskList:[
-            {id:1, title:'To learn ES6', done: true, createdAt: new Date(2018,11,19).getTime(), isEdited: false},
-            {id:2, title:'To learn React', done: false, createdAt: new Date(2018,11,19).getTime(), isEdited: false},
-            {id:3, title:'To learn Redux', done: false, createdAt: new Date(2018,11,19).getTime(), isEdited: false}
+            {id:1, title:'To learn ES6', done: true, createdAt: new Date(2018,10,19).getTime(), isEdited: false},
+            {id:2, title:'To learn React', done: false, createdAt: new Date(2018,10,19).getTime(), isEdited: false},
+            {id:3, title:'To learn Redux', done: false, createdAt: new Date(2018,10,19).getTime(), isEdited: false}
         ],
         showDoneTasks: false,
         searchValue: '',
         showAllTasks: false,
         searchTaskList: [],
-        neWTaskValue: ''
+        neWTaskValue: '',
+        startDate: '',
+        endDate: ''
     }
 
     componentDidMount(){
@@ -77,8 +79,10 @@ class App extends Component {
 
     showAllTasksHandler = () =>{
         this.setState({
+            startDate: '',
+            endDate: '',
             searchValue: '',
-            showAllTasks:true
+            showAllTasks:true,
         }, () => localStorage.setItem('state', JSON.stringify(this.state)))
     }
 
@@ -99,7 +103,6 @@ class App extends Component {
             return item.id === id
         })
         updatedTaskList[index].title = event.target.value
-        console.log(updatedTaskList[index],event.target.value)
         this.setState({
             taskList: updatedTaskList
         }, () => localStorage.setItem('state', JSON.stringify(this.state)))
@@ -137,6 +140,27 @@ class App extends Component {
         }, () => localStorage.setItem('state', JSON.stringify(this.state)))
     }
 
+    changeStartDateHandler = (event) =>{
+        this.setState({startDate: new Date(event.target.value).getTime()},
+            () => localStorage.setItem('state', JSON.stringify(this.state)) );
+    }
+
+    changeEndDateHandler = (event) =>{
+        this.setState({endDate: new Date(event.target.value).getTime()},
+            () => localStorage.setItem('state', JSON.stringify(this.state)) );
+    }
+
+    selectTasksForPeriodHandler = () =>{
+        const taskList = this.state.taskList
+        const startDate = this.state.startDate
+        const endDate = this.state.endDate
+        const updatedTaskList = taskList.filter((task)=>{
+            return (task.createdAt >= startDate)&&(task.createdAt <= endDate)
+        })
+        this.setState({searchTaskList:updatedTaskList},
+            () => localStorage.setItem('state', JSON.stringify(this.state)))
+    }
+
     render() {
         let updatedTaskList = []
         const taskList = this.state.taskList
@@ -156,19 +180,18 @@ class App extends Component {
         if (this.state.showAllTasks){
             updatedTaskList = taskList
         }
+        if ((this.state.startDate)&&(this.state.startDate)){
+            updatedTaskList = this.state.searchTaskList
+        }
 
         return (
             <div className="App">
                 <Layout>
+                    <div className='col-md-offset-1 col-md-7'>
                     <Search
                         search={this.searchValueHandler}
                         searchValue={this.state.searchValue}
                         changeSearchValue={this.changeSearchValueHandler}
-                    />
-                    <Filter
-                        show={this.state.showDoneTask}
-                        change={this.changeShowDoneTask}
-                        clicked={this.showAllTasksHandler}
                     />
                     <TaskList
                         taskList={updatedTaskList}
@@ -182,6 +205,19 @@ class App extends Component {
                         clicked={this.addTaskHandler}
                         changeNewTasValue={this.changeNewTaskValueHandler}
                     />
+                    </div>
+                    <div className='col-md-4'>
+                    <Filter
+                        show={this.state.showDoneTask}
+                        change={this.changeShowDoneTask}
+                        clicked={this.showAllTasksHandler}
+                        changeStartDate={this.changeStartDateHandler}
+                        changeEndDate={this.changeEndDateHandler}
+                        selectTasksForPeriod={this.selectTasksForPeriodHandler}
+                        startDateValue={this.state.startDate}
+                        endDateValue={this.state.endDate}
+                    />
+                    </div>
                 </Layout>
             </div>
         );
